@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# Install AWS CLI v2 {{{
+curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+rm awscliv2.zip
+# }}}
+
+# Configure AWS default region {{{
+aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile default
+aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" --profile default
+aws configure set region "$AWS_DEFAULT_REGION" --profile default
+# }}}
+
+# Update rule task definition
+rule=health # <<parameters.rule-name>>
+td_arn=$CCI_ORB_AWS_ECS_REGISTERED_TASK_DFN
+
+cat >set-task-definition-arn.py <<EOM
+import sys
+import json
+targets = json.loads(sys.stdin.read())
+targets['Targets'][0]['EcsParameters']['TaskDefinitionArn'] = '$td_arn'
+targets['Rule'] = '$rule'
+print(json.dumps(targets))
+EOM
+
+aws events list-targets-by-rule --rule "$rule" --output json |
+  python set-task-definition-arn.py >cli-input.json
+
+AWS_PAGER='' aws events put-targets --cli-input-json "$(cat cli-input.json)"
+
+rm set-task-definition-arn.py
+rm cli-input.json

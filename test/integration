@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# This test re-deploys the current Task Definition to a random Restyled-related
+# Scheduled Task Rule, using local ~/.aws credentials.
+#
+###
+CCI_ORB_AWS_ECS_REGISTERED_TASK_DFN=$(
+  aws events list-targets-by-rule \
+    --rule health \
+    --output text \
+    --query 'Targets[0].EcsParameters.TaskDefinitionArn'
+)
+
+export CCI_ORB_AWS_ECS_REGISTERED_TASK_DFN
+
+echo "Re-deploying $CCI_ORB_AWS_ECS_REGISTERED_TASK_DFN..."
+docker run --rm -it \
+  --workdir /home/circleci \
+  --volume "$PWD"/test/integration-step:/home/circleci/run:ro \
+  --env AWS_DEFAULT_REGION="$(aws configure get region)" \
+  --env AWS_ACCESS_KEY_ID="$(aws configure get aws_access_key_id)" \
+  --env AWS_SECRET_ACCESS_KEY="$(aws configure get aws_secret_access_key)" \
+  --env CCI_ORB_AWS_ECS_REGISTERED_TASK_DFN \
+  circleci/python:3.7.1 ./run
