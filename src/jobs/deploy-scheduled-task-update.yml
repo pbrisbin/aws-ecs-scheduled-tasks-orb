@@ -47,7 +47,7 @@ parameters:
   container-env-var-updates:
     description: >
       Use this to update or set the values of environment variables that will be
-      defined for the containers. 
+      defined for the containers.
 
       (Existing environment variables not included in this parameter will not be
       removed)
