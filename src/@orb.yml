@@ -1,0 +1,11 @@
+version: 2.1
+
+description: |
+  Update an ECS Scheduled task's rule
+
+display:
+  source_url: https://github.com/pbrisbin/aws-ecs-scheduled-tasks-orb
+
+orbs:
+  aws-cli: circleci/aws-cli@1.0.0
+  aws-ecs: circleci/aws-ecs@0.0.10
