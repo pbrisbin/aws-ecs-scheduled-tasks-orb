@@ -16,9 +16,11 @@ workflows:
     jobs:
       - aws-ecs-scheduled-tasks/deploy-scheduled-task-update:
           name: release
+          requires: [test]
           family: my-app
-          cluster-name: prod-services
-          container-image-name-updates: 'container=api,tag=${CIRCLE_SHA1:0:10}'
+          rule-name: some-rule
+          container-image-name-updates:
+            'container=api,tag=${CIRCLE_SHA1:0:10}'
 ```
 
 ---
